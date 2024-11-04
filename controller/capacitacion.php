@@ -279,6 +279,43 @@ switch ($_GET["op"]) {
     
     
  
-     
-    
+      
+        case "guardar_capacitacion_persona":
+            // Obtener el cuerpo de la solicitud en formato JSON
+            $input = json_decode(file_get_contents("php://input"), true);
+        
+            // Verificar que los datos necesarios estén presentes
+            if (!isset($input["capa_id"]) || !isset($input["pers_ids"]) || !is_array($input["pers_ids"])) {
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "Datos incompletos o formato incorrecto."
+                ]);
+                exit();
+            }
+        
+            $capa_id = $input["capa_id"]; // ID de la capacitación
+            $pers_ids = $input["pers_ids"]; // Array de IDs de personas
+        
+            // Llamar al método del modelo para guardar las asignaciones
+            $resultado = $capacitacion->guardarCapacitacionPersona($capa_id, $pers_ids);
+        
+            if ($resultado) {
+                echo json_encode([
+                    "status" => "success",
+                    "message" => "Capacitación asignada correctamente."
+                ]);
+            } else {
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "No se pudo asignar la capacitación."
+                ]);
+            }
+            break;
+        
+        
+        
+        
+        
+        
+        
 }

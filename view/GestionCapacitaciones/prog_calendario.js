@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
                         // Actualizar la leyenda con el mes actual
                         const currentDate = calendar.getDate();
                         const mes = currentDate.getMonth() + 1; // Mes actual (1-indexado)
@@ -189,61 +190,50 @@ document.addEventListener('DOMContentLoaded', function() {
                     listaFuturas.appendChild(crearItemCapacitacion(capacitacion));
                 });
             })
-            .catch(error => {
-                console.error('Error al cargar la leyenda:', error);
-            });
+            .catch(error => console.error('Error al cargar la leyenda:', error));
     }
 
-    // Función para limpiar las listas de la leyenda
     function limpiarLeyenda() {
         listaPasadas.innerHTML = '';
         listaEnProceso.innerHTML = '';
         listaFuturas.innerHTML = '';
     }
 
-    // Función para crear un ítem en la leyenda
-    // Función para crear un ítem en la leyenda con botones Editar y Eliminar
-    /// Función para crear un ítem en la leyenda con botones Editar y Eliminar
     function crearItemCapacitacion(capacitacion) {
         const item = document.createElement('li');
         item.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
 
-        // Contenido de la capacitación (título)
         const titulo = document.createElement('span');
         titulo.textContent = capacitacion.capa_titulo;
 
-        // Contenedor para los botones de acción
         const acciones = document.createElement('div');
-        acciones.classList.add('d-flex', 'gap-2'); // Espacio entre botones
+        acciones.classList.add('d-flex', 'gap-2');
 
-        // Botón Editar con ícono
         const btnEditar = document.createElement('button');
         btnEditar.classList.add('btn', 'btn-sm', 'btn-primary', 'btn-circle');
-        btnEditar.innerHTML = '<i class="fa fa-edit"></i>'; // Ícono de editar
-        btnEditar.title = 'Editar'; // Tooltip
+        btnEditar.innerHTML = '<i class="fa fa-edit"></i>';
+        btnEditar.title = 'Editar';
         btnEditar.onclick = function() {
             editarCapacitacion(capacitacion.capa_id);
         };
 
-        // Botón Eliminar con ícono
         const btnEliminar = document.createElement('button');
         btnEliminar.classList.add('btn', 'btn-sm', 'btn-danger', 'btn-circle');
-        btnEliminar.innerHTML = '<i class="fa fa-trash"></i>'; // Ícono de eliminar
-        btnEliminar.title = 'Eliminar'; // Tooltip
+        btnEliminar.innerHTML = '<i class="fa fa-trash"></i>';
+        btnEliminar.title = 'Eliminar';
         btnEliminar.onclick = function() {
             eliminarCapacitacion(capacitacion.capa_id);
         };
 
-        // Añadir los botones al contenedor de acciones
         acciones.appendChild(btnEditar);
         acciones.appendChild(btnEliminar);
 
-        // Añadir el título y las acciones al ítem de la lista
         item.appendChild(titulo);
         item.appendChild(acciones);
 
         return item;
     }
+
 
 
 
@@ -367,6 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     Swal.fire('Éxito', 'Capacitación actualizada con éxito.', 'success').then(() => {
                         $('#editCapacitacionModal').modal('hide'); // Cerrar el modal
                         calendar.refetchEvents(); // Refrescar el calendario
+                        actualizarLeyenda(new Date().getMonth() + 1, new Date().getFullYear()); // Refrescar la leyenda
                     });
                 } else {
                     Swal.fire('Error', 'Error al actualizar la capacitación: ' + data.message, 'error');
@@ -587,12 +578,12 @@ document.addEventListener('DOMContentLoaded', function() {
         tablaPersonas.innerHTML = '';
 
         personasPagina.forEach(persona => {
-            const isChecked = personasSeleccionadas.has(persona.pers_dni) ? 'checked' : '';
+            const isChecked = personasSeleccionadas.has(persona.pers_id) ? 'checked' : '';
 
             const row = document.createElement('tr');
             row.innerHTML = `
                     <td>
-                        <input type="checkbox" class="persona-checkbox" data-id="${persona.pers_dni}" 
+                        <input type="checkbox" class="persona-checkbox" data-id="${persona.pers_id}" 
                         data-nombre="${persona.nombre_completo}" ${isChecked}>
                     </td>
                     <td>${persona.pers_dni}</td>
@@ -622,23 +613,25 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Función para seleccionar/deseleccionar todas las personas de la lista completa
+    // Función para seleccionar/deseleccionar todas las personas de la lista completa
     selectAllCheckbox.addEventListener('change', function() {
         const isChecked = this.checked;
 
         // Iterar sobre todas las personas de la lista completa
         personasFiltradas.forEach(persona => {
             if (isChecked) {
-                personasSeleccionadas.add(persona.pers_dni); // Agregar al Set global
-                agregarPersonaSeleccionada(persona.nombre_completo, persona.pers_dni);
+                personasSeleccionadas.add(persona.pers_id); // Agregar al Set global usando pers_id
+                agregarPersonaSeleccionada(persona.nombre_completo, persona.pers_id);
             } else {
-                personasSeleccionadas.delete(persona.pers_dni); // Remover del Set global
-                eliminarPersonaSeleccionada(persona.pers_dni);
+                personasSeleccionadas.delete(persona.pers_id); // Remover del Set global usando pers_id
+                eliminarPersonaSeleccionada(persona.pers_id);
             }
         });
 
         // Refrescar la tabla para reflejar los cambios
         renderizarTabla();
     });
+
 
     // Función para agregar persona seleccionada a la lista
     function agregarPersonaSeleccionada(nombre, id) {
@@ -760,50 +753,157 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
     /*TODO AHORA EN GENERAL CON EL ENVIAR MI CAPACITACION  */
     document.getElementById("btnEnviarCapacitacion").addEventListener("click", function() {
-        // Mostrar el modal
-        $('#modalListarCapacitaciones').modal('show');
+
 
         // Realizar la petición al servidor para obtener las capacitaciones
         fetch('/Intranet/controller/capacitacion.php?op=listar_capacitacionest')
             .then(response => response.json())
             .then(data => {
                 console.log(data); // Verificar la respuesta en consola
+
                 if (data.status === "success" && data.data.length > 0) {
                     let tbody = document.getElementById("capacitacionTableBody");
                     tbody.innerHTML = ""; // Limpiar contenido previo
 
-                    // Ordenar las capacitaciones por fecha de inicio (descendente)
+                    // Ordenar capacitaciones por fecha de inicio (descendente)
                     let capacitacionesOrdenadas = data.data.sort((a, b) => {
                         return new Date(b.capa_fecha_inicio) - new Date(a.capa_fecha_inicio);
                     });
 
-                    // Iterar sobre las capacitaciones y agregarlas a la tabla
+                    // Llenar la tabla con las capacitaciones
                     capacitacionesOrdenadas.forEach(capacitacion => {
                         let row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${capacitacion.capa_id}</td>
                             <td>${capacitacion.capa_titulo}</td>
                             <td>${capacitacion.capa_expositor}</td>
-                            <td>${capacitacion.capa_fecha_inicio} ${capacitacion.capa_hora_inicio}</td> `;
+                            <td>${capacitacion.capa_fecha_inicio} ${capacitacion.capa_hora_inicio}</td>
+                            <td>
+                            <button class="btn btn-success btn-sm btn-enviar" data-id="${capacitacion.capa_id}">
+                                Enviar
+                            </button>
+                            </td>`;
 
-                        // Agregar evento para seleccionar la fila
+                        // Agregar evento de selección de fila
                         row.addEventListener('click', function() {
                             seleccionarFila(this, capacitacion);
                         });
 
                         tbody.appendChild(row);
                     });
+
+                    // Mostrar el modal solo si hay capacitaciones disponibles
+                    $('#modalListarCapacitaciones').modal('show');
                 } else {
-                    alert("No se encontraron capacitaciones activas.");
+                    // Si no hay capacitaciones, mostrar alerta con SweetAlert2
+                    Swal.fire({
+                        title: 'No se encontraron capacitaciones activas',
+                        text: 'Por favor, intenta más tarde.',
+                        icon: 'info',
+                        confirmButtonText: 'Aceptar'
+                    });
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo completar la solicitud.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+            });
     });
 
-    // Función para manejar la selección de la fila
+
+
+
+    // Paso 2: Enviar capacitación seleccionada junto con las personas
+    document.addEventListener('click', function(event) {
+        if (event.target.classList.contains('btn-enviar')) {
+            let capaId = event.target.getAttribute('data-id');
+            let personasSeleccionadas = [];
+
+            document.querySelectorAll('.persona-checkbox:checked').forEach(function(checkbox) {
+                personasSeleccionadas.push(checkbox.getAttribute('data-id'));
+            });
+
+            // Mensajes de depuración adicionales
+            console.log("ID de Capacitación:", capaId);
+            console.log("IDs de Personas Seleccionadas:", personasSeleccionadas);
+
+            if (personasSeleccionadas.length === 0 || !capaId) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Debes seleccionar al menos una persona y una capacitación.',
+                    icon: 'error',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            fetch('/Intranet/controller/capacitacion.php?op=guardar_capacitacion_persona', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        capa_id: capaId,
+                        pers_ids: personasSeleccionadas
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Respuesta del servidor:", data); // Verifica la respuesta del servidor
+
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: 'Capacitación asignada correctamente.',
+                            icon: 'success',
+                            confirmButtonText: 'Aceptar'
+                        }).then(() => {
+                            $('#modalListarCapacitaciones').modal('hide');
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'No se pudo asignar la capacitación.',
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo completar la solicitud.',
+                        icon: 'error',
+                        confirmButtonText: 'Aceptar'
+                    });
+                });
+        }
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Función para seleccionar la fila de capacitación
     function seleccionarFila(fila, capacitacion) {
         // Eliminar la clase de selección de cualquier fila previamente seleccionada
         let filas = document.querySelectorAll('#tablaCapacitaciones tbody tr');
@@ -812,15 +912,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Agregar la clase de selección a la fila actual
         fila.classList.add('fila-seleccionada');
 
-        // Almacenar el ID de la capacitación en un input oculto
-        document.getElementById("capaId").value = capacitacion.capa_id;
-
-        // Opcional: Mostrar un mensaje de confirmación (puedes eliminarlo si no lo necesitas)
         console.log(`Capacitación seleccionada: ${capacitacion.capa_titulo}`);
     }
-
-
-
 
 
 });

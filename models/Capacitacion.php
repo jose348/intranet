@@ -29,7 +29,7 @@ class Capacitacion extends Conectar
         $conectar = parent::conexion();
 
         // Verificar si el motor es MySQL y usar CONCAT
-        $sql = "SELECT 
+        $sql = "SELECT pers_id,
                     CONCAT(pers_nombre, ' ', pers_apelpat) AS nombre_completo,
                     pers_dni
                 FROM sc_escalafon.tb_persona 
@@ -143,8 +143,10 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
  // Método para listar todas las capacitaciones// Método para listar todas las capacitaciones
       // Método para listar todas las capacitaciones
       public function listarCapacitaciones() {
+        $conectar = parent::conexion();
         try {
-            $conectar = parent::conexion(); // Obtiene la conexión desde la clase padre
+            
+             // Obtiene la conexión desde la clase padre
             $sql = "SELECT capa_id, capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio 
 	    FROM sc_intranet.tb_capacitaciones where capa_estado='activa' ORDER BY capa_fecha_inicio desc";
 
@@ -166,6 +168,40 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
             return []; // Retorna un array vacío en caso de error
         }
     }
+
+
+
+    public function guardarCapacitacionPersona($capa_id, $pers_ids) {
+        try {
+            $conectar = parent::conexion();
+            $conectar->beginTransaction(); // Iniciar transacción
+    
+            $sql = "INSERT INTO sc_intranet.tb_capacitacion_persona 
+                    (capa_id, pers_id, caper_confirmar, caper_is_envio) 
+                    VALUES (:capa_id, :pers_id, false, true)";
+            $stmt = $conectar->prepare($sql);
+    
+            foreach ($pers_ids as $pers_id) {
+                $stmt->bindParam(":capa_id", $capa_id, PDO::PARAM_INT);
+                $stmt->bindParam(":pers_id", $pers_id, PDO::PARAM_INT);
+                $stmt->execute();
+            }
+    
+            $conectar->commit(); // Confirmar la transacción
+            return true;
+        } catch (Exception $e) {
+            $conectar->rollBack(); // Revertir la transacción en caso de error
+            error_log("Error al guardar capacitación: " . $e->getMessage()); // Registrar el error
+            return false;
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
     
 
 }
