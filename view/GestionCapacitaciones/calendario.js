@@ -1,7 +1,13 @@
 document.addEventListener('DOMContentLoaded', function() {
-    var calendarEl = document.getElementById('calendar');
+    // Asegúrate de que `usuarioId` esté accesible desde el contexto global
+    console.log("Usuario ID en js:", usuarioId); // Verifica el ID del usuario
 
-    // Inicializa FullCalendar con idioma español y cambio de "today" a "hoy"
+    const calendarEl = document.getElementById('calendar');
+    const btnNotificaciones = document.getElementById("btnNotificaciones");
+    const notificacionesCount = document.getElementById("notificacionesCount");
+    const listaNotificaciones = document.getElementById("listaNotificaciones");
+
+    // Inicializa FullCalendar
     var calendar = new FullCalendar.Calendar(calendarEl, {
         locale: 'es',
         buttonText: {
@@ -10,65 +16,90 @@ document.addEventListener('DOMContentLoaded', function() {
         initialView: 'dayGridMonth',
         height: 'auto',
         contentHeight: 700,
-        editable: true,
-
+        editable: false,
+        events: function(fetchInfo, successCallback, failureCallback) {
+            fetch(`/Intranet/controller/capacitacion.php?op=obtener_capacitaciones_id&pers_id=${usuarioId}`)
+                .then(response => response.json())
+                .then(events => {
+                    console.log("Eventos recibidos:", events); // Log de eventos recibidos
+                    successCallback(events);
+                })
+                .catch(error => {
+                    console.error("Error al cargar eventos:", error);
+                    failureCallback(error);
+                });
+        },
         eventClick: function(info) {
-            // Muestra los datos de la capacitación en el modal
             document.getElementById('modalTitulo').textContent = info.event.title;
             document.getElementById('modalExpositor').textContent = "Expositor: " + info.event.extendedProps.expositor;
             document.getElementById('modalFlyer').src = info.event.extendedProps.flyer;
-
-            // Asignar el ID del evento al botón de eliminar
-            document.getElementById('btnEliminar').setAttribute('data-id', info.event.id);
-
-            // Mostrar el modal
             $('#eventInfoModal').modal('show');
         }
     });
 
     calendar.render();
 
-    // Manejar el formulario de agregar nueva capacitación
-    document.getElementById('capacitacionForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var titulo = document.getElementById('tituloCapacitacion').value;
-        var expositor = document.getElementById('expositorCapacitacion').value;
-        var fechaInicio = document.getElementById('fechaInicio').value;
-        var fechaFin = document.getElementById('fechaFin').value;
-        var archivo = document.getElementById('archivoCapacitacion').files[0]; // Obtener el archivo subido
-        var flyer = document.getElementById('flyerCapacitacion').files[0]; // Obtener el flyer subido
+    // Función para obtener notificaciones
+    function obtenerNotificaciones() {
+        fetch(`/Intranet/controller/capacitacion.php?op=obtener_notificaciones&pers_id=${usuarioId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.notificaciones) {
+                    mostrarNotificaciones(data.notificaciones);
+                }
+            })
+            .catch(error => console.error("Error al obtener notificaciones:", error));
+    }
 
-        // Generar un color aleatorio de la lista
-        var colores = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'];
-        var colorAleatorio = colores[Math.floor(Math.random() * colores.length)];
+    // Muestra las notificaciones en el modal y actualiza el contador
+    function mostrarNotificaciones(notificaciones) {
+        listaNotificaciones.innerHTML = ""; // Limpiar lista de notificaciones
+        notificacionesCount.textContent = notificaciones.length;
 
-        // Agregar el evento al calendario
-        calendar.addEvent({
-            id: String(new Date().getTime()), // Generar un ID único basado en el tiempo
-            title: titulo + ' - ' + expositor,
-            start: fechaInicio,
-            end: fechaFin,
-            backgroundColor: colorAleatorio,
-            borderColor: colorAleatorio,
-            textColor: '#fff',
-            flyer: URL.createObjectURL(flyer), // Usar la URL de la imagen subida
-            expositor: expositor
+        notificaciones.forEach(notificacion => {
+            const li = document.createElement("li");
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
+                <div>
+                    <strong>${notificacion.capa_titulo}</strong><br>
+                    <small>Expositor: ${notificacion.capa_expositor}</small><br>
+                    <small>Fecha: ${notificacion.capa_fecha_inicio} ${notificacion.capa_hora_inicio}</small>
+                </div>
+                <button class="btn btn-sm btn-primary btn-marcar-leida" data-id="${notificacion.caper_id}">
+                    Marcar como leída
+                </button>
+            `;
+
+            listaNotificaciones.appendChild(li);
         });
 
-        // Cerrar el modal
-        $('#addCapacitacionModal').modal('hide');
+        document.querySelectorAll(".btn-marcar-leida").forEach(button => {
+            button.addEventListener("click", function() {
+                const caperId = this.getAttribute("data-id");
+                marcarNotificacionLeida(caperId);
+            });
+        });
+    }
 
-        // Limpiar el formulario
-        document.getElementById('capacitacionForm').reset();
-    });
+    // Marca la notificación como leída
+    function marcarNotificacionLeida(caperId) {
+        fetch(`/Intranet/controller/capacitacion.php?op=marcar_notificacion_leida`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `caper_id=${caperId}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    obtenerNotificaciones();
+                }
+            })
+            .catch(error => console.error("Error al marcar notificación como leída:", error));
+    }
 
-    // Manejar el botón de eliminar
-    document.getElementById('btnEliminar').addEventListener('click', function() {
-        var eventId = this.getAttribute('data-id');
-        var event = calendar.getEventById(eventId);
-        if (event) {
-            event.remove(); // Elimina el evento del calendario
-            $('#eventInfoModal').modal('hide'); // Cerrar el modal
-        }
+    // Cargar notificaciones y evento de botón
+    obtenerNotificaciones();
+    btnNotificaciones.addEventListener("click", function() {
+        $('#modalNotificaciones').modal('show');
     });
 });

@@ -96,16 +96,18 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
 
     // Método para eliminar una capacitación
     // Método para eliminar una capacitación
-    public function eliminar_capacitacion($capa_id) {
+    public function eliminar_capacitacion($capa_id)
+    {
         $conectar = parent::conexion();
         $sql = "DELETE FROM sc_intranet.tb_capacitaciones WHERE capa_id = ?";
         $stmt = $conectar->prepare($sql);
         $stmt->bindParam(1, $capa_id, PDO::PARAM_INT);
         $stmt->execute();
     }
-    
- 
-    public function obtenerCapacitacionPorId($capa_id) {
+
+
+    public function obtenerCapacitacionPorId($capa_id)
+    {
         try {
             $conectar = parent::conexion();
             $sql = "SELECT capa_id, capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, 
@@ -119,11 +121,12 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
             throw new Exception("Error al obtener la capacitación: " . $e->getMessage());
         }
     }
-        
-    
-    
 
-    public function actualizarCapacitacion($data) {
+
+
+
+    public function actualizarCapacitacion($data)
+    {
         $conectar = parent::conexion();
         $sql = "UPDATE sc_intranet.tb_capacitaciones 
                 SET capa_titulo = ?, capa_expositor = ?, capa_fecha_inicio = ?, 
@@ -132,27 +135,35 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
                 WHERE capa_id = ?";
         $stmt = $conectar->prepare($sql);
         $stmt->execute([
-            $data['titulo'], $data['expositor'], $data['fecha_inicio'], 
-            $data['hora_inicio'], $data['fecha_fin'], $data['hora_fin'], 
-            $data['flyer'], $data['archivo'], $data['video'], $data['id']
+            $data['titulo'],
+            $data['expositor'],
+            $data['fecha_inicio'],
+            $data['hora_inicio'],
+            $data['fecha_fin'],
+            $data['hora_fin'],
+            $data['flyer'],
+            $data['archivo'],
+            $data['video'],
+            $data['id']
         ]);
     }
-    
-     
-    
- // Método para listar todas las capacitaciones// Método para listar todas las capacitaciones
-      // Método para listar todas las capacitaciones
-      public function listarCapacitaciones() {
+
+
+
+    // Método para listar todas las capacitaciones// Método para listar todas las capacitaciones
+    // Método para listar todas las capacitaciones
+    public function listarCapacitaciones()
+    {
         $conectar = parent::conexion();
         try {
-            
-             // Obtiene la conexión desde la clase padre
+
+            // Obtiene la conexión desde la clase padre
             $sql = "SELECT capa_id, capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio 
 	    FROM sc_intranet.tb_capacitaciones where capa_estado='activa' ORDER BY capa_fecha_inicio desc";
 
 
             $stmt = $conectar->prepare($sql); // Preparar la consulta
- 
+
 
             $stmt->execute(); // Ejecuta la consulta
 
@@ -171,22 +182,23 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
 
 
 
-    public function guardarCapacitacionPersona($capa_id, $pers_ids) {
+    public function guardarCapacitacionPersona($capa_id, $pers_ids)
+    {
         try {
             $conectar = parent::conexion();
             $conectar->beginTransaction(); // Iniciar transacción
-    
+
             $sql = "INSERT INTO sc_intranet.tb_capacitacion_persona 
                     (capa_id, pers_id, caper_confirmar, caper_is_envio) 
                     VALUES (:capa_id, :pers_id, false, true)";
             $stmt = $conectar->prepare($sql);
-    
+
             foreach ($pers_ids as $pers_id) {
                 $stmt->bindParam(":capa_id", $capa_id, PDO::PARAM_INT);
                 $stmt->bindParam(":pers_id", $pers_id, PDO::PARAM_INT);
                 $stmt->execute();
             }
-    
+
             $conectar->commit(); // Confirmar la transacción
             return true;
         } catch (Exception $e) {
@@ -195,13 +207,68 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
             return false;
         }
     }
-    
-    
-    
-    
-    
-    
-    
-    
 
-}
+
+
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
+    // Función para obtener las notificaciones (capacitaciones asignadas no confirmadas)
+    // Función para obtener las notificaciones (capacitaciones asignadas no confirmadas)
+// Función para obtener las notificaciones de capacitaciones asignadas no confirmadas 
+ 
+    // Método para obtener las notificaciones no confirmadas
+    public function obtener_notificaciones($pers_id) {
+        $conectar = parent::conexion(); // Obtener la conexión a la base de datos
+    
+        $query = "SELECT cp.caper_id, c.capa_titulo, c.capa_expositor, c.capa_fecha_inicio, c.capa_hora_inicio
+                  FROM sc_intranet.tb_capacitacion_persona AS cp
+                  JOIN sc_intranet.tb_capacitaciones AS c ON cp.capa_id = c.capa_id
+                  WHERE cp.pers_id = :pers_id AND cp.caper_confirmar = FALSE
+                  ORDER BY cp.caper_created_at DESC";
+    
+        $stmt = $conectar->prepare($query);
+        $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        echo json_encode(['notificaciones' => $notificaciones]);
+    }
+    
+    // Método para marcar una notificación como leída (confirmada)
+    public function marcar_notificacion_leida($caper_id) {
+        $conectar = parent::conexion(); // Obtener la conexión a la base de datos
+    
+        $query = "UPDATE sc_intranet.tb_capacitacion_persona
+                  SET caper_confirmar = TRUE, caper_fecha_confirmar = NOW()
+                  WHERE caper_id = :caper_id";
+    
+        $stmt = $conectar->prepare($query);
+        $stmt->bindParam(':caper_id', $caper_id, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        echo json_encode(['status' => 'success']);
+    }
+
+    public function get_capacitaciones_por_usuario($pers_id) {
+        $conectar = parent::conexion();
+        $sql = "SELECT c.capa_titulo,c.capa_id, c.capa_titulo, c.capa_expositor, 
+	c.capa_fecha_inicio, c.capa_hora_inicio, c.capa_fecha_fin, 
+	c.capa_hora_fin 
+	FROM sc_intranet.tb_capacitaciones c 
+	inner join sc_intranet.tb_capacitacion_persona cp on cp.capa_id=c.capa_id
+ WHERE cp.pers_id = :pers_id";
+        $stmt = $conectar->prepare($sql);
+        $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    
+    
+} 
+
+

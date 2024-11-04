@@ -84,7 +84,7 @@ class Usuario1 extends Conectar{
                     header("Location:" . 'https://www.munichiclayo.gob.pe/sisSeguridad/view/USURecuperacionContra/blanqueamiento.php?dni='.$dni.'&sistema=INTRANET');
                     exit();
                 }elseif($detalle=="Acceso concedido"){
-                    $_SESSION["id"] = 0;
+                    $_SESSION["id"] = $data["pers_id"];
                     $_SESSION["acce_dni"] = $data["pers_dni"];
                     $_SESSION["acce_rol"] = $data["perm_tipo"];
                     $_SESSION["usua_estado"] = $data["pers_estado"];
