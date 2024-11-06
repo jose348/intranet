@@ -53,7 +53,7 @@
         // Funci n para obtener la base del path del sitio para construir URLs absolutas desde relativas.
         function getBasePath() {
 
-            return '/sisi/view';
+            return '/intranet/view';
         }
 
         // Funci n para normalizar la URL de la p gina actual y los enlaces del men .

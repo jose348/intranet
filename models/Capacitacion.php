@@ -218,42 +218,51 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
     /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
     // Función para obtener las notificaciones (capacitaciones asignadas no confirmadas)
     // Función para obtener las notificaciones (capacitaciones asignadas no confirmadas)
-// Función para obtener las notificaciones de capacitaciones asignadas no confirmadas 
- 
+    // Función para obtener las notificaciones de capacitaciones asignadas no confirmadas 
+
     // Método para obtener las notificaciones no confirmadas
-    public function obtener_notificaciones($pers_id) {
-        $conectar = parent::conexion(); // Obtener la conexión a la base de datos
-    
-        $query = "SELECT cp.caper_id, c.capa_titulo, c.capa_expositor, c.capa_fecha_inicio, c.capa_hora_inicio
+    public function obtener_notificaciones($pers_id)
+    {
+        $conectar = parent::conexion();
+
+        $query = "SELECT cp.caper_id, c.capa_titulo, c.capa_expositor, c.capa_fecha_inicio, c.capa_hora_inicio, cp.caper_confirmar
                   FROM sc_intranet.tb_capacitacion_persona AS cp
                   JOIN sc_intranet.tb_capacitaciones AS c ON cp.capa_id = c.capa_id
-                  WHERE cp.pers_id = :pers_id AND cp.caper_confirmar = FALSE
+                  WHERE cp.pers_id = :pers_id 
                   ORDER BY cp.caper_created_at DESC";
-    
+
         $stmt = $conectar->prepare($query);
         $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
         $stmt->execute();
         $notificaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         echo json_encode(['notificaciones' => $notificaciones]);
     }
-    
+
     // Método para marcar una notificación como leída (confirmada)
-    public function marcar_notificacion_leida($caper_id) {
-        $conectar = parent::conexion(); // Obtener la conexión a la base de datos
-    
+    // Método para cambiar el estado de la notificación
+    public function cambiar_estado_notificacion($caper_id, $nuevoEstado)
+    {
+        $conectar = parent::conexion();
+
+        // Actualizar el estado de confirmación
         $query = "UPDATE sc_intranet.tb_capacitacion_persona
-                  SET caper_confirmar = TRUE, caper_fecha_confirmar = NOW()
-                  WHERE caper_id = :caper_id";
-    
+              SET caper_confirmar = :nuevoEstado, caper_fecha_confirmar = NOW()
+              WHERE caper_id = :caper_id";
+
         $stmt = $conectar->prepare($query);
+        $stmt->bindParam(':nuevoEstado', $nuevoEstado, PDO::PARAM_BOOL);
         $stmt->bindParam(':caper_id', $caper_id, PDO::PARAM_INT);
-        $stmt->execute();
-    
-        echo json_encode(['status' => 'success']);
+
+        if ($stmt->execute()) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'No se pudo actualizar el estado de la notificación']);
+        }
     }
 
-    public function get_capacitaciones_por_usuario($pers_id) {
+    public function get_capacitaciones_por_usuario($pers_id)
+    {
         $conectar = parent::conexion();
         $sql = "SELECT c.capa_titulo,c.capa_id, c.capa_titulo, c.capa_expositor, 
 	c.capa_fecha_inicio, c.capa_hora_inicio, c.capa_fecha_fin, 
@@ -266,9 +275,25 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    
-    
-} 
 
 
+
+    /*TODO  Cpacitaciones.php anda capacitaciones.js */
+    /*TODO  Cpacitaciones.php anda capacitaciones.js */
+    /*TODO  Cpacitaciones.php anda capacitaciones.js */
+    public function obtenerFlyersPorUsuario($pers_id) {
+        $conectar = parent::conexion();
+        $sql = "SELECT c.capa_flyer
+                FROM sc_intranet.tb_capacitaciones AS c
+                INNER JOIN sc_intranet.tb_capacitacion_persona AS cp ON c.capa_id = cp.capa_id
+                WHERE cp.pers_id = :pers_id AND c.capa_estado = 'activa' AND c.capa_flyer IS NOT NULL";
+        
+        $stmt = $conectar->prepare($sql);
+        $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
+        $stmt->execute();
+    
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    
+}

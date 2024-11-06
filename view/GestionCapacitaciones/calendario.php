@@ -1,5 +1,5 @@
     <?php
- 
+
 
     require_once("../../config/conexion.php");
     if (isset($_SESSION["id"])) {
@@ -56,6 +56,28 @@
                 .btn-agregar-capacitacion i {
                     margin-right: 5px;
                 }
+
+                .notificacion-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    margin-bottom: 10px;
+                }
+
+                .notificacion-botones .btn {
+                    margin-right: 15px;
+                }
+
+                /* Estilo para agrandar y centrar el badge de notificación */
+#notificacionesCount {
+    font-size: 12px; /* Tamaño de fuente del número en el badge */
+    padding: 4px 6px; /* Aumenta el tamaño del badge */
+    /* Ajusta la posición para centrarse mejor */
+    transform: scale(0.9); /* Escala un poco más para destacar */
+}
             </style>
         </head>
 
@@ -95,18 +117,19 @@
                         </div>
 
                         <!-- Modal de Notificaciones -->
-                        <div class="modal fade" id="modalNotificaciones" tabindex="-1" aria-labelledby="modalNotificacionesLabel" aria-hidden="true">
+                        <!-- Modal de Notificaciones -->
+                        <div class="modal fade " id="modalNotificaciones" tabindex="-1" aria-labelledby="modalNotificacionesLabel" aria-hidden="true">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="modalNotificacionesLabel">Notificaciones de Capacitaciones</h5>
+                                        <h5 class="modal-title" id="modalNotificacionesLabel">Notificaciones de Capacitaciones de Usuario <?php echo json_encode($_SESSION["acce_apellidos"] . "  "); ?></h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                     <div class="modal-body">
                                         <ul id="listaNotificaciones" class="list-group">
-                                            
+                                            <!-- Las notificaciones se cargarán dinámicamente aquí -->
                                         </ul>
                                     </div>
                                     <div class="modal-footer">
@@ -115,6 +138,7 @@
                                 </div>
                             </div>
                         </div>
+
 
 
                         <!-- Contenedor del calendario -->
@@ -129,9 +153,6 @@
 
             <script type="text/javascript">
                 const usuarioId = <?php echo json_encode($usuario_id); ?>; // ID del usuario de la sesión
-               
-            
-            
             </script>
 
 

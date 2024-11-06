@@ -5,14 +5,14 @@ require_once("../models/Capacitacion.php");
 $capacitacion = new Capacitacion();
 switch ($_GET["op"]) {
     case "obtener_capacitaciones":
-          // Verificar que 'start' y 'end' están definidos en la solicitud
-    if (!isset($_GET['start']) || !isset($_GET['end'])) {
-        echo json_encode([
-            "status" => "error",
-            "message" => "Los parámetros start y end son necesarios."
-        ]);
-        exit();
-    }
+        // Verificar que 'start' y 'end' están definidos en la solicitud
+        if (!isset($_GET['start']) || !isset($_GET['end'])) {
+            echo json_encode([
+                "status" => "error",
+                "message" => "Los parámetros start y end son necesarios."
+            ]);
+            exit();
+        }
         // Obtener las capacitaciones entre el rango de fechas
         $start = $_GET['start'];
         $end = $_GET['end'];
@@ -326,9 +326,96 @@ switch ($_GET["op"]) {
         /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
         /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
         /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
-        case 'obtener_notificaciones':
+    case 'obtener_notificaciones':
+        if (isset($_GET['pers_id'])) {
+            $capacitacion->obtener_notificaciones($_GET['pers_id']);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => "ID de usuario no proporcionado."
+            ]);
+        }
+        break;
+
+    case 'cambiar_estado_notificacion':
+        if (isset($_POST['caper_id']) && isset($_POST['accion'])) {
+            $caper_id = $_POST['caper_id'];
+            $accion = $_POST['accion'];
+
+            // Determinar el nuevo estado según la acción
+            $nuevoEstado = $accion === "asistir" ? true : false;
+            $capacitacion->cambiar_estado_notificacion($caper_id, $nuevoEstado);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => "ID de notificación o acción no proporcionados."
+            ]);
+        }
+        break;
+
+
+    case "obtener_capacitaciones_id":
+        $pers_id = $_GET['pers_id'];
+
+        if (!empty($pers_id)) {
+            $datos = $capacitacion->get_capacitaciones_por_usuario($pers_id);
+
+            $eventos = [];
+            $hoy = new DateTime();
+
+            foreach ($datos as $row) {
+                // Calcular las fechas de inicio y fin de la capacitación
+                $fecha_inicio = new DateTime($row['capa_fecha_inicio']);
+                $fecha_fin = new DateTime($row['capa_fecha_fin']);
+
+                // Determinar el color según el estado
+                if ($fecha_fin < $hoy) {
+                    // Capacitación pasada
+                    $color = '#dc3545'; // Rojo
+                } elseif ($fecha_inicio <= $hoy && $fecha_fin >= $hoy) {
+                    // Capacitación en proceso
+                    $color = '#ffc107'; // Amarillo
+                } else {
+                    // Capacitación futura
+                    $color = '#28a745'; // Verde
+                }
+
+                // Agregar el evento al array de eventos
+                $eventos[] = [
+                    'id' => $row['capa_id'],
+                    'title' => $row['capa_titulo'],
+                    'expositor' => $row['capa_expositor'],
+                    'start' => $row['capa_fecha_inicio'] . 'T' . $row['capa_hora_inicio'],
+                    'end' => $row['capa_fecha_fin'] . 'T' . $row['capa_hora_fin'],
+                    'backgroundColor' => $color,
+                    'borderColor' => $color,
+                    'textColor' => '#fff'
+                ];
+            }
+
+            echo json_encode($eventos);
+        } else {
+            echo json_encode([]);
+        }
+        break;
+
+
+
+        /*TODO  Cpacitaciones.php anda capacitaciones.js */
+        /*TODO  Cpacitaciones.php anda capacitaciones.js */
+        /*TODO  Cpacitaciones.php anda capacitaciones.js */
+        case 'obtener_flyers_por_usuario':
             if (isset($_GET['pers_id'])) {
-                $capacitacion->obtener_notificaciones($_GET['pers_id']);
+                $pers_id = $_GET['pers_id'];
+                $datos = $capacitacion->obtenerFlyersPorUsuario($pers_id);
+        
+                // Agrega un log para ver los datos devueltos por el modelo
+                error_log(json_encode($datos));
+        
+                echo json_encode([
+                    "status" => "success",
+                    "data" => $datos
+                ]);
             } else {
                 echo json_encode([
                     "status" => "error",
@@ -337,64 +424,7 @@ switch ($_GET["op"]) {
             }
             break;
         
-        case 'marcar_notificacion_leida':
-            if (isset($_POST['caper_id'])) {
-                $capacitacion->marcar_notificacion_leida($_POST['caper_id']);
-            } else {
-                echo json_encode([
-                    "status" => "error",
-                    "message" => "ID de notificación no proporcionado."
-                ]);
-            }
-            break;
         
-
-            case "obtener_capacitaciones_id":
-                $pers_id = $_GET['pers_id'];
-            
-                if (!empty($pers_id)) {
-                    $datos = $capacitacion->get_capacitaciones_por_usuario($pers_id);
-            
-                    $eventos = [];
-                    $hoy = new DateTime();
-            
-                    foreach ($datos as $row) {
-                        // Calcular las fechas de inicio y fin de la capacitación
-                        $fecha_inicio = new DateTime($row['capa_fecha_inicio']);
-                        $fecha_fin = new DateTime($row['capa_fecha_fin']);
-            
-                        // Determinar el color según el estado
-                        if ($fecha_fin < $hoy) {
-                            // Capacitación pasada
-                            $color = '#dc3545'; // Rojo
-                        } elseif ($fecha_inicio <= $hoy && $fecha_fin >= $hoy) {
-                            // Capacitación en proceso
-                            $color = '#ffc107'; // Amarillo
-                        } else {
-                            // Capacitación futura
-                            $color = '#28a745'; // Verde
-                        }
-            
-                        // Agregar el evento al array de eventos
-                        $eventos[] = [
-                            'id' => $row['capa_id'],
-                            'title' => $row['capa_titulo'],
-                            'expositor' => $row['capa_expositor'],
-                            'start' => $row['capa_fecha_inicio'] . 'T' . $row['capa_hora_inicio'],
-                            'end' => $row['capa_fecha_fin'] . 'T' . $row['capa_hora_fin'],
-                            'backgroundColor' => $color,
-                            'borderColor' => $color,
-                            'textColor' => '#fff'
-                        ];
-                    }
-            
-                    echo json_encode($eventos);
-                } else {
-                    echo json_encode([]);
-                }
-                break;
-            
-            
-            
+        
         
 }

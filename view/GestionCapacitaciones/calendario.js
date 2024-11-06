@@ -51,51 +51,83 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => console.error("Error al obtener notificaciones:", error));
     }
 
-    // Muestra las notificaciones en el modal y actualiza el contador
     function mostrarNotificaciones(notificaciones) {
         listaNotificaciones.innerHTML = ""; // Limpiar lista de notificaciones
         notificacionesCount.textContent = notificaciones.length;
 
         notificaciones.forEach(notificacion => {
             const li = document.createElement("li");
-            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.className = "notificacion-item list-group-item";
+
+            const estadoAsistir = notificacion.caper_confirmar ? "Asistir" : "No Asistir";
+            const botonAsistir = `
+                <button class="btn btn-success btn-sm btn-asistir" data-id="${notificacion.caper_id}">
+                    Asistir
+                </button>
+            `;
+            const botonNoAsistir = `
+                <button class="btn btn-danger btn-sm btn-no-asistir" data-id="${notificacion.caper_id}">
+                    No Asistir
+                </button>
+            `;
+
             li.innerHTML = `
                 <div>
                     <strong>${notificacion.capa_titulo}</strong><br>
                     <small>Expositor: ${notificacion.capa_expositor}</small><br>
                     <small>Fecha: ${notificacion.capa_fecha_inicio} ${notificacion.capa_hora_inicio}</small>
                 </div>
-                <button class="btn btn-sm btn-primary btn-marcar-leida" data-id="${notificacion.caper_id}">
-                    Marcar como leída
-                </button>
+                <div class="notificacion-botones">
+                    ${botonAsistir}
+                    ${botonNoAsistir}
+                </div>
             `;
 
             listaNotificaciones.appendChild(li);
         });
 
-        document.querySelectorAll(".btn-marcar-leida").forEach(button => {
+        document.querySelectorAll(".btn-asistir").forEach(button => {
             button.addEventListener("click", function() {
                 const caperId = this.getAttribute("data-id");
-                marcarNotificacionLeida(caperId);
+                cambiarEstadoNotificacion(caperId, "asistir", this);
+            });
+        });
+
+        document.querySelectorAll(".btn-no-asistir").forEach(button => {
+            button.addEventListener("click", function() {
+                const caperId = this.getAttribute("data-id");
+                cambiarEstadoNotificacion(caperId, "no_asistir", this);
             });
         });
     }
 
-    // Marca la notificación como leída
-    function marcarNotificacionLeida(caperId) {
-        fetch(`/Intranet/controller/capacitacion.php?op=marcar_notificacion_leida`, {
+    // Función para cambiar el estado de la notificación en el servidor y actualizar el botón
+    function cambiarEstadoNotificacion(caperId, accion, button) {
+        fetch(`/Intranet/controller/capacitacion.php?op=cambiar_estado_notificacion`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: `caper_id=${caperId}`
+                body: `caper_id=${caperId}&accion=${accion}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.status === "success") {
-                    obtenerNotificaciones();
+                    if (accion === "asistir") {
+                        button.classList.remove("btn-danger");
+                        button.classList.add("btn-success");
+                        button.textContent = "Asistir";
+                        button.nextElementSibling.classList.add("d-none");
+                    } else {
+                        button.classList.remove("btn-success");
+                        button.classList.add("btn-danger");
+                        button.textContent = "No Asistir";
+                        button.previousElementSibling.classList.add("d-none");
+                    }
                 }
             })
-            .catch(error => console.error("Error al marcar notificación como leída:", error));
+            .catch(error => console.error("Error al cambiar estado de notificación:", error));
     }
+
+
 
     // Cargar notificaciones y evento de botón
     obtenerNotificaciones();

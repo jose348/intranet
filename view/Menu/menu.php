@@ -79,9 +79,15 @@
           </div><!-- menu-item -->
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub nav flex-column">
+        <li class="nav-item"><a href="../GestionCapacitaciones/capacitaciones.php" class="nav-link ">Capacitaiones</a></li>
           <li class="nav-item"><a href="../GestionCapacitaciones/calendario.php" class="nav-link ">Calendario</a></li>
+          
 
         </ul>
+
+         
+         
+ 
 
     <?php
          break;
