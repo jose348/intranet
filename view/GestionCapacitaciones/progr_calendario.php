@@ -545,6 +545,11 @@
                                     </div>
                                 </div>
 
+                                <div class="form-group  col-12">
+                                    <label for="linkCapacitacion">Link Capacitación</label>
+                                    <input type="text" class="form-control" id="linkCapacitacion" name="linkCapacitacion" required>
+                                </div>
+
 
                                 <br>
                                 <br>

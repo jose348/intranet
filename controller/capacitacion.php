@@ -79,6 +79,7 @@ switch ($_GET["op"]) {
         $horaInicio = isset($_POST['horaInicio']) ? $_POST['horaInicio'] : null;
         $fechaFin = isset($_POST['fechaFin']) ? $_POST['fechaFin'] : null;
         $horaFin = isset($_POST['horaFin']) ? $_POST['horaFin'] : null;
+        $linkCapacitacion = isset($_POST['linkCapacitacion']) ? $_POST['linkCapacitacion'] : null;
 
         // Directorio para subir archivos
         $uploadDir = '../uploads/';
@@ -113,14 +114,16 @@ switch ($_GET["op"]) {
         if (!empty($_FILES['videoCapacitacion']['name'])) {
             $videoPath = $uploadDir . basename($_FILES['videoCapacitacion']['name']);
             if (!move_uploaded_file($_FILES['videoCapacitacion']['tmp_name'], $videoPath)) {
+                error_log("Error al mover el archivo de video: " . $_FILES['videoCapacitacion']['error']);
                 echo json_encode(["status" => "error", "message" => "Error al subir el video."]);
                 exit;
             }
+            
         }
 
         // Guardar en la base de datos
-        $capacitacion = new Capacitacion();
-        $capacitacion->guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyerPath, $archivoPath, $videoPath);
+       
+        $capacitacion->guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyerPath, $archivoPath, $videoPath, $linkCapacitacion);
 
         echo json_encode(["status" => "success"]);
         break;
@@ -389,7 +392,8 @@ switch ($_GET["op"]) {
                     'end' => $row['capa_fecha_fin'] . 'T' . $row['capa_hora_fin'],
                     'backgroundColor' => $color,
                     'borderColor' => $color,
-                    'textColor' => '#fff'
+                    'textColor' => '#fff',
+                     
                 ];
             }
 
@@ -404,27 +408,35 @@ switch ($_GET["op"]) {
         /*TODO  Cpacitaciones.php anda capacitaciones.js */
         /*TODO  Cpacitaciones.php anda capacitaciones.js */
         /*TODO  Cpacitaciones.php anda capacitaciones.js */
-        case 'obtener_flyers_por_usuario':
-            if (isset($_GET['pers_id'])) {
-                $pers_id = $_GET['pers_id'];
-                $datos = $capacitacion->obtenerFlyersPorUsuario($pers_id);
-        
-                // Agrega un log para ver los datos devueltos por el modelo
-                error_log(json_encode($datos));
-        
-                echo json_encode([
-                    "status" => "success",
-                    "data" => $datos
-                ]);
-            } else {
-                echo json_encode([
-                    "status" => "error",
-                    "message" => "ID de usuario no proporcionado."
-                ]);
-            }
-            break;
-        
-        
-        
-        
+    case 'obtener_flyers_por_usuario':
+        if (isset($_GET['pers_id'])) {
+            $pers_id = $_GET['pers_id'];
+            $datos = $capacitacion->obtenerFlyersPorUsuario($pers_id);
+
+            // Agrega un log para ver los datos devueltos por el modelo
+            error_log(json_encode($datos));
+
+            echo json_encode([
+                "status" => "success",
+                "data" => $datos
+            ]);
+        } else {
+            echo json_encode([
+                "status" => "error",
+                "message" => "ID de usuario no proporcionado."
+            ]);
+        }
+        break;
+
+
+    case 'obtener_capacitaciones_usuario':
+        if (isset($_GET['pers_id'])) {
+            $pers_id = $_GET['pers_id'];
+            $datos = $capacitacion->get_capacitaciones_por_usuario_tabla($pers_id);
+
+            echo json_encode(['status' => 'success', 'data' => $datos]);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'ID de usuario no proporcionado.']);
+        }
+        break;
 }

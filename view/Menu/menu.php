@@ -34,6 +34,7 @@
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub nav flex-column">
           <li class="nav-item"><a href="../GestionCapacitaciones/progr_calendario.php" class="nav-link ">Calendario</a></li>
+          <li class="nav-item"><a href="../GestionCapacitaciones/asistencia.php" class="nav-link ">Asistencia</a></li>
 
         </ul>
 
@@ -68,7 +69,7 @@
 
       <?php
         break;
-       default:
+      default:
 
       ?>
 
@@ -79,18 +80,19 @@
           </div><!-- menu-item -->
         </a><!-- br-menu-link -->
         <ul class="br-menu-sub nav flex-column">
-        <li class="nav-item"><a href="../GestionCapacitaciones/capacitaciones.php" class="nav-link ">Capacitaiones</a></li>
+         
           <li class="nav-item"><a href="../GestionCapacitaciones/calendario.php" class="nav-link ">Calendario</a></li>
-          
+          <li class="nav-item"><a href="../GestionCapacitaciones/capacitaciones.php" class="nav-link ">Mis Capacitaiones</a></li>
+         
 
         </ul>
 
-         
-         
- 
+
+
+
 
     <?php
-         break;
+        break;
     }
     ?>
 

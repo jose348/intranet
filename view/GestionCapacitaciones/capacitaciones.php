@@ -92,9 +92,30 @@ if (isset($_SESSION["id"])) {
                             <span class="sr-only">Next</span>
                         </a>
                     </div>
+                    <br>
 
+                    <!-- Tabla de Capacitaciones -->
+                    <div class="mt-4">
+                        <h4 class="text-primary"> </h4>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Título de la Capacitación</th>
+                                    <th>Capacitador</th>
+                                    <th>Hora de Inicio</th>
+                                    <th>Link Completo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="capacitacionTableBody">
+                                <!-- Las filas de la tabla se cargarán aquí dinámicamente -->
+                            </tbody>
+                        </table>
+                    </div>
 
                 </section>
+
+
+
             </div>
         </div>
 
@@ -138,8 +159,58 @@ if (isset($_SESSION["id"])) {
                         .catch(error => console.error("Error al cargar los flyers:", error));
                 }
 
-                // Llamar a la función para cargar los flyers
+                function cargarCapacitaciones() {
+                    fetch(`/Intranet/controller/capacitacion.php?op=obtener_capacitaciones_usuario&pers_id=${usuarioId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const tableBody = document.getElementById('capacitacionTableBody');
+                            tableBody.innerHTML = ''; // Limpiar el contenido actual
+
+                            if (data.status === 'success' && data.data.length > 0) {
+                                data.data.forEach(capacitacion => {
+                                    const row = document.createElement('tr');
+
+                                    const titleCell = document.createElement('td');
+                                    titleCell.textContent = capacitacion.capa_titulo;
+
+                                    const instructorCell = document.createElement('td');
+                                    instructorCell.textContent = capacitacion.capa_expositor;
+
+                                    const startTimeCell = document.createElement('td');
+                                    startTimeCell.textContent = `${capacitacion.capa_fecha_inicio}  `;
+
+                                    const linkCell = document.createElement('td');
+                                    const link = document.createElement('a');
+
+                                    // Asigna el enlace completo al href
+                                    link.href = capacitacion.capa_link;
+                                    link.textContent = 'Ver Detalles';
+                                    link.target = '_blank'; // Abre el enlace en una nueva pestaña
+                                    linkCell.appendChild(link);
+
+                                    row.appendChild(titleCell);
+                                    row.appendChild(instructorCell);
+                                    row.appendChild(startTimeCell);
+                                    row.appendChild(linkCell);
+
+                                    tableBody.appendChild(row);
+                                });
+                            } else {
+                                const emptyRow = document.createElement('tr');
+                                const emptyCell = document.createElement('td');
+                                emptyCell.colSpan = 4;
+                                emptyCell.className = 'text-center';
+                                emptyCell.textContent = 'No hay capacitaciones disponibles.';
+                                emptyRow.appendChild(emptyCell);
+                                tableBody.appendChild(emptyRow);
+                            }
+                        })
+                        .catch(error => console.error("Error al cargar las capacitaciones:", error));
+                }
+
+                // Llamar a las funciones para cargar los flyers y capacitaciones
                 cargarFlyers();
+                cargarCapacitaciones();
             });
         </script>
 

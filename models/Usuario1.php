@@ -32,8 +32,9 @@ class Usuario1 extends Conectar{
                     // Si es IPv6, intenta obtener la dirección IPv4 local
                     $ip = '::1'; // Dirección IPv6 de localhost
 
-                    // REEMPLAZAR POR LA DIRECCIÓN IP DE LA PC
-                    $ip = "192.168.12.44";
+                    // ip de pruebas
+                   // $ip = "10.10.10.16";
+                    $ip = "10.10.10.13";
                 }
 
                 //comienzo API seguridad

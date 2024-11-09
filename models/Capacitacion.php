@@ -56,15 +56,19 @@ class Capacitacion extends Conectar
 
 
 
-    public function guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyer, $archivos, $video)
+    public function guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyer, $archivos, $video, $link)
     {
         $conectar = parent::conexion();
+       /*  $flyer = substr($flyer,2);
+        $archivos = substr($archivos,2); */
+       // $video = substr($video,2);
         $sql = "INSERT INTO sc_intranet.tb_capacitaciones 
-                (capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, capa_fecha_fin, capa_hora_fin, capa_flyer, capa_archivo, capa_video, capa_estado) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa')";
+                (capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, capa_fecha_fin, capa_hora_fin, capa_flyer, capa_archivo, capa_video, capa_estado, capa_link) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa', ?)";
         $stmt = $conectar->prepare($sql);
-        $stmt->execute([$titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyer, $archivos, $video]);
+        $stmt->execute([$titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyer, $archivos, $video, $link]);
     }
+
 
 
 
@@ -183,31 +187,47 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
 
 
     public function guardarCapacitacionPersona($capa_id, $pers_ids)
-    {
-        try {
-            $conectar = parent::conexion();
-            $conectar->beginTransaction(); // Iniciar transacción
+{
+    try {
+        $conectar = parent::conexion();
+        $conectar->beginTransaction(); // Iniciar transacción
 
-            $sql = "INSERT INTO sc_intranet.tb_capacitacion_persona 
-                    (capa_id, pers_id, caper_confirmar, caper_is_envio) 
-                    VALUES (:capa_id, :pers_id, false, true)";
-            $stmt = $conectar->prepare($sql);
+        // Consulta para verificar si la combinación capa_id y pers_id ya existe
+        $checkSql = "SELECT COUNT(*) FROM sc_intranet.tb_capacitacion_persona 
+                     WHERE capa_id = :capa_id AND pers_id = :pers_id";
+        $checkStmt = $conectar->prepare($checkSql);
 
-            foreach ($pers_ids as $pers_id) {
-                $stmt->bindParam(":capa_id", $capa_id, PDO::PARAM_INT);
-                $stmt->bindParam(":pers_id", $pers_id, PDO::PARAM_INT);
-                $stmt->execute();
+        // Consulta para insertar la capacitación en caso de que no exista previamente
+        $insertSql = "INSERT INTO sc_intranet.tb_capacitacion_persona 
+                      (capa_id, pers_id, caper_confirmar, caper_is_envio) 
+                      VALUES (:capa_id, :pers_id, false, true)";
+        $insertStmt = $conectar->prepare($insertSql);
+
+        foreach ($pers_ids as $pers_id) {
+            // Verificar si el registro ya existe
+            $checkStmt->bindParam(":capa_id", $capa_id, PDO::PARAM_INT);
+            $checkStmt->bindParam(":pers_id", $pers_id, PDO::PARAM_INT);
+            $checkStmt->execute();
+            $exists = $checkStmt->fetchColumn();
+
+            // Insertar solo si la combinación no existe
+            if ($exists == 0) {
+                $insertStmt->bindParam(":capa_id", $capa_id, PDO::PARAM_INT);
+                $insertStmt->bindParam(":pers_id", $pers_id, PDO::PARAM_INT);
+                $insertStmt->execute();
             }
-
-            $conectar->commit(); // Confirmar la transacción
-            return true;
-        } catch (Exception $e) {
-            $conectar->rollBack(); // Revertir la transacción en caso de error
-            error_log("Error al guardar capacitación: " . $e->getMessage()); // Registrar el error
-            return false;
         }
-    }
 
+        $conectar->commit(); // Confirmar la transacción
+        return true;
+    } catch (Exception $e) {
+        $conectar->rollBack(); // Revertir la transacción en caso de error
+        error_log("Error al guardar capacitación: " . $e->getMessage()); // Registrar el error
+        return false;
+    }
+}
+
+    
 
 
     /*TODO APARTIR DE AHORA REALIZAMOS LAS NOTIFICACIONES PARA EL USUARIO  */
@@ -269,7 +289,7 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
 	c.capa_hora_fin 
 	FROM sc_intranet.tb_capacitaciones c 
 	inner join sc_intranet.tb_capacitacion_persona cp on cp.capa_id=c.capa_id
- WHERE cp.pers_id = :pers_id";
+    WHERE cp.pers_id = :pers_id";
         $stmt = $conectar->prepare($sql);
         $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
         $stmt->execute();
@@ -281,19 +301,34 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
     /*TODO  Cpacitaciones.php anda capacitaciones.js */
     /*TODO  Cpacitaciones.php anda capacitaciones.js */
     /*TODO  Cpacitaciones.php anda capacitaciones.js */
-    public function obtenerFlyersPorUsuario($pers_id) {
+    public function obtenerFlyersPorUsuario($pers_id)
+    {
         $conectar = parent::conexion();
         $sql = "SELECT c.capa_flyer
                 FROM sc_intranet.tb_capacitaciones AS c
                 INNER JOIN sc_intranet.tb_capacitacion_persona AS cp ON c.capa_id = cp.capa_id
                 WHERE cp.pers_id = :pers_id AND c.capa_estado = 'activa' AND c.capa_flyer IS NOT NULL";
-        
+
         $stmt = $conectar->prepare($sql);
         $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
         $stmt->execute();
-    
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    
+
+
+    public function get_capacitaciones_por_usuario_tabla($pers_id)
+    {
+        $conectar = parent::conexion();
+        $sql = "SELECT c.capa_titulo,c.capa_id, c.capa_titulo, c.capa_expositor, 
+	c.capa_fecha_inicio,  c.capa_link
+	FROM sc_intranet.tb_capacitaciones c 
+	inner join sc_intranet.tb_capacitacion_persona cp on cp.capa_id=c.capa_id
+    WHERE cp.pers_id = :pers_id";
+        $stmt = $conectar->prepare($sql);
+        $stmt->bindParam(':pers_id', $pers_id, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
 }
