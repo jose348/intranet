@@ -82,7 +82,7 @@ if (isset($_SESSION["id"])) {
             <div class="pd-x-20 pd-sm-x-30 pd-t-20 pd-sm-t-30">
                 <section class="card">
                     <header class="card-header">
-                        <h3 class="text-primary">Calendario de Capacitaciones</h3>
+                        <h3 class="text-primary">Area de Desarrollo y Capacidad</h3>
                         <p>Visualiza y edita tus capacitaciones en este calendario.</p>
 
 
@@ -766,7 +766,7 @@ if (isset($_SESSION["id"])) {
         ?>
         <!-- FullCalendar JS -->
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-        <script type="text/javascript" src="prog_calendario.js"></script>
+        <script type="text/javascript" src="adc.js"></script>
 
     </body>
 

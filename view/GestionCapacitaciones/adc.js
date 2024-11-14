@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData(capacitacionForm);
 
         // Enviar los datos del formulario mediante fetch
-        fetch('/Intranet/controller/capacitacion.php?op=guardar_capacitacion', {
+        fetch('/Intranet/controller/adc.php?op=guardar_capacitacion', {
                 method: 'POST',
                 body: formData,
             })
@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: '' // Eliminamos los botones innecesarios
         },
-        events: '/Intranet/controller/capacitacion.php?op=obtener_capacitaciones',
+        events: '/Intranet/controller/adc.php?op=obtener_capacitaciones',
         eventDisplay: 'block',
 
         // Detectar cambio de vista o mes
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para actualizar la leyenda al cambiar de mes
     function actualizarLeyenda(mes, anio) {
-        const url = `/Intranet/controller/capacitacion.php?op=listar_capacitaciones_mes&mes=${mes}&anio=${anio}&t=${new Date().getTime()}`;
+        const url = `/Intranet/controller/adc.php?op=listar_capacitaciones_mes&mes=${mes}&anio=${anio}&t=${new Date().getTime()}`;
 
         fetch(url)
             .then(response => response.json())
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                fetch('/Intranet/controller/capacitacion.php?op=eliminar_capacitacion', {
+                fetch('/Intranet/controller/adc.php?op=eliminar_capacitacion', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded'
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
     /*TODO DITAR CAPACITACION */
     /*TODO DITAR CAPACITACION */
     function editarCapacitacion(capa_id) {
-        fetch(`/Intranet/controller/capacitacion.php?op=obtener_capacitacion`, {
+        fetch(`/Intranet/controller/adc.php?op=obtener_capacitacion`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: new URLSearchParams({ id: capa_id }),
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`${key}: ${value}`);
         }
         // Realizamos la solicitud fetch
-        fetch('/Intranet/controller/capacitacion.php?op=actualizar_capacitacion', {
+        fetch('/Intranet/controller/adc.php?op=actualizar_capacitacion', {
                 method: 'POST',
                 body: formData
             })
@@ -566,7 +566,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const itemsPerPage = 5;
 
     function cargarPersonas() {
-        fetch('/Intranet/controller/capacitacion.php?op=listar_personas')
+        fetch('/Intranet/controller/adc.php?op=listar_personas')
             .then(response => response.json())
             .then(data => {
                 personas = data;
@@ -765,7 +765,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
         // Realizar la petición al servidor para obtener las capacitaciones
-        fetch('/Intranet/controller/capacitacion.php?op=listar_capacitacionest')
+        fetch('/Intranet/controller/adc.php?op=listar_capacitacionest')
             .then(response => response.json())
             .then(data => {
                 console.log(data); // Verificar la respuesta en consola
@@ -851,7 +851,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            fetch('/Intranet/controller/capacitacion.php?op=guardar_capacitacion_persona', {
+            fetch('/Intranet/controller/adc.php?op=guardar_capacitacion_persona', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

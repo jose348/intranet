@@ -122,16 +122,30 @@ if (isset($_SESSION["id"])) {
               case "9":
             ?>
 
+             
                 <div class="col-14">
                   <!-- Carpeta de Escalafón -->
-                  <div class="folder-item">
+                  <a href="../GestionEscalafon/persona.php" class="folder-item">
                     <i class="folder-icon fa fa-sitemap"></i>
                     <div class="folder-info">
                       <div class="folder-title">Escalafón</div>
                       <div class="folder-path">Mi informacion Personal</div>
                     </div>
-                  </div>
+                  </a>
                 </div>
+
+
+                <div class="col-14">
+                  <!-- Carpeta de Boletas de Pago -->
+                  <a href="../GestionBoletas/boletas.php" class="folder-item">
+                    <i class="folder-icon fa fa-file-invoice-dollar"></i>
+                    <div class="folder-info">
+                      <div class="folder-title">Mis Boletas de Pago</div>
+                      <div class="folder-path">Mis registros de pagos y sueldos</div>
+                    </div>
+                  </a>
+                </div>
+   
 
 
                 <div class="col-14">
@@ -143,18 +157,6 @@ if (isset($_SESSION["id"])) {
                       <div class="folder-path">Mis cursos y formaciones</div>
                     </div>
                   </a>
-                </div>
-
-
-                <div class="col-14">
-                  <!-- Carpeta de Boletas de Pago -->
-                  <div class="folder-item">
-                    <i class="folder-icon fa fa-file-invoice-dollar"></i>
-                    <div class="folder-info">
-                      <div class="folder-title">Mis Boletas de Pago</div>
-                      <div class="folder-path">Mis registros de pagos y sueldos</div>
-                    </div>
-                  </div>
                 </div>
 
 
@@ -186,15 +188,31 @@ if (isset($_SESSION["id"])) {
 
               ?>
 
+
+
+               
+
                 <div class="col-14">
                   <!-- Carpeta de Escalafón -->
-                  <div class="folder-item">
+                  <a href="../GestionEscalafon/persona.php" class="folder-item">
                     <i class="folder-icon fa fa-sitemap"></i>
                     <div class="folder-info">
                       <div class="folder-title">Escalafón</div>
                       <div class="folder-path">Mi informacion Personal</div>
                     </div>
-                  </div>
+                  </a>
+                </div>
+
+
+                <div class="col-14">
+                  <!-- Carpeta de Boletas de Pago -->
+                  <a href="../GestionEscalafon/persona.php" class="folder-item">
+                    <i class="folder-icon fa fa-file-invoice-dollar"></i>
+                    <div class="folder-info">
+                      <div class="folder-title">Mis Boletas de Pago</div>
+                      <div class="folder-path">Mis registros de pagos y sueldos</div>
+                    </div>
+                  </a>
                 </div>
 
 
@@ -208,19 +226,6 @@ if (isset($_SESSION["id"])) {
                     </div>
                   </a>
                 </div>
-
-
-                <div class="col-14">
-                  <!-- Carpeta de Boletas de Pago -->
-                  <div class="folder-item">
-                    <i class="folder-icon fa fa-file-invoice-dollar"></i>
-                    <div class="folder-info">
-                      <div class="folder-title">Mis Boletas de Pago</div>
-                      <div class="folder-path">Mis registros de pagos y sueldos</div>
-                    </div>
-                  </div>
-                </div>
-
 
                 <div class="col-14">
                   <!-- Carpeta de Vacaciones -->

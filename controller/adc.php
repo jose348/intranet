@@ -1,8 +1,8 @@
 <?php
 require_once("../config/conexion.php");
-require_once("../models/Capacitacion.php");
+require_once("../models/Adc.php");
 
-$capacitacion = new Capacitacion();
+$adc = new Adc();
 switch ($_GET["op"]) {
     case "obtener_capacitaciones":
         // Verificar que 'start' y 'end' están definidos en la solicitud
@@ -17,7 +17,7 @@ switch ($_GET["op"]) {
         $start = $_GET['start'];
         $end = $_GET['end'];
 
-        $datos = $capacitacion->get_capacitaciones($start, $end);
+        $datos = $adc->get_capacitaciones($start, $end);
 
         // Lista de colores predefinidos
         $colores = ['#007bff', '#28a745', '#ffc107', '#dc3545', '#17a2b8'];
@@ -54,7 +54,7 @@ switch ($_GET["op"]) {
         // Listar personas desde la tabla persona del escalafón
     case "listar_personas":
         try {
-            $datos = $capacitacion->listarpersonas();
+            $datos = $adc->listarpersonas();
             echo json_encode($datos);
         } catch (Exception $e) {
             echo json_encode(["status" => "error", "message" => $e->getMessage()]);
@@ -63,7 +63,7 @@ switch ($_GET["op"]) {
 
     case "eliminar_persona":
         $pers_id = $_POST['id']; // ID de la persona a eliminar
-        $capacitacion->eliminar_persona($pers_id);
+        $adc->eliminar_persona($pers_id);
         echo json_encode(["status" => "success"]);
         break;
 
@@ -123,7 +123,7 @@ switch ($_GET["op"]) {
             }
         
             // Guardar en la base de datos usando el modelo
-            $capacitacion->guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyerPath, $archivoPath, $videoPath, $linkCapacitacion);
+            $adc->guardarCapacitacion($titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyerPath, $archivoPath, $videoPath, $linkCapacitacion);
             echo json_encode(["status" => "success"]);
             break;
         
@@ -143,7 +143,7 @@ switch ($_GET["op"]) {
                 throw new Exception("Parámetros mes o año no proporcionados");
             }
 
-            $datos = $capacitacion->obtenerCapacitacionesPorMes($mes, $anio);
+            $datos = $adc->obtenerCapacitacionesPorMes($mes, $anio);
 
             $capacitaciones_pasadas = [];
             $capacitaciones_en_proceso = [];
@@ -178,7 +178,7 @@ switch ($_GET["op"]) {
         try {
             if (isset($_POST['id'])) {
                 $capa_id = $_POST['id'];
-                $capacitacion->eliminar_capacitacion($capa_id);
+                $adc->eliminar_capacitacion($capa_id);
 
                 echo json_encode([
                     "status" => "success",
@@ -203,7 +203,7 @@ switch ($_GET["op"]) {
     case "obtener_capacitacion":
         if (isset($_POST['id'])) {
             $capa_id = $_POST['id'];
-            $capacitacion = $capacitacion->obtenerCapacitacionPorId($capa_id);
+            $capacitacion = $adc->obtenerCapacitacionPorId($capa_id);
             echo json_encode(["status" => "success", "capacitacion" => $capacitacion]);
         } else {
             echo json_encode(["status" => "error", "message" => "ID no proporcionado."]);
@@ -228,7 +228,7 @@ switch ($_GET["op"]) {
             $uploadDir = '../uploads/';
 
             // Obtener los archivos anteriores
-            $capacitacionExistente = $capacitacion->obtenerCapacitacionPorId($id);
+            $capacitacionExistente = $adc->obtenerCapacitacionPorId($id);
             $flyerPath = $capacitacionExistente['capa_flyer'];
             $archivoPath = $capacitacionExistente['capa_archivo'];
             $videoPath = $capacitacionExistente['capa_video'];
@@ -257,7 +257,7 @@ switch ($_GET["op"]) {
             }
 
             // Actualizar la capacitación
-            $capacitacion->actualizarCapacitacion([
+            $adc->actualizarCapacitacion([
                 'id' => $id,
                 'titulo' => $titulo,
                 'expositor' => $expositor,
@@ -279,7 +279,7 @@ switch ($_GET["op"]) {
         /*TODO GUARDAMOS LA CAPACITACION-PERSONAS  JUNTO CON LAS PERSONAS PARA ENVIARLAS */
         /*TODO GUARDAMOS LA CAPACITACION-PERSONAS  JUNTO CON LAS PERSONAS PARA ENVIARLAS */
     case 'listar_capacitacionest':
-        $capacitaciones = $capacitacion->listarCapacitaciones();
+        $capacitaciones = $adc->listarCapacitaciones();
         if (count($capacitaciones) > 0) {
             echo json_encode(['status' => 'success', 'data' => $capacitaciones]);
         } else {
@@ -307,7 +307,7 @@ switch ($_GET["op"]) {
         $pers_ids = $input["pers_ids"]; // Array de IDs de personas
 
         // Llamar al método del modelo para guardar las asignaciones
-        $resultado = $capacitacion->guardarCapacitacionPersona($capa_id, $pers_ids);
+        $resultado = $adc->guardarCapacitacionPersona($capa_id, $pers_ids);
 
         if ($resultado) {
             echo json_encode([

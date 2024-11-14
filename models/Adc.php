@@ -1,13 +1,14 @@
 <?php
-class Capacitacion extends Conectar
+class Adc extends Conectar
 {
 
     // Obtener las capacitaciones entre un rango de fechas
     public function get_capacitaciones($start, $end)
     {
         $conectar = parent::conexion();
-        $sql = "SELECT * FROM sc_intranet.tb_capacitaciones WHERE capa_fecha_inicio >= ? 
-        AND capa_fecha_fin <= ? and capa_estado='activa' and capa_depe='GTIE' ";
+        $sql = "SELECT * FROM sc_intranet.tb_capacitaciones 
+        WHERE capa_fecha_inicio >= ? AND capa_fecha_fin <= ?
+         and capa_estado='activa' and capa_depe='ADC' ";
         $sql = $conectar->prepare($sql);
         $sql->bindValue(1, $start);
         $sql->bindValue(2, $end);
@@ -19,7 +20,7 @@ class Capacitacion extends Conectar
     public function cancelar_capacitacion($capa_id)
     {
         $conectar = parent::conexion();
-        $sql = "UPDATE sc_intranet.tb_capacitaciones SET capa_estado = 'cancelada' WHERE capa_id = ?";
+        $sql = "UPDATE sc_intranet.tb_capacitaciones SET capa_estado = 'cancelada' WHERE capa_id = ? and capa_depe='ADC'";
         $sql = $conectar->prepare($sql);
         $sql->bindValue(1, $capa_id);
         $sql->execute();
@@ -66,8 +67,8 @@ class Capacitacion extends Conectar
         $video = basename($video);
     
         $sql = "INSERT INTO sc_intranet.tb_capacitaciones 
-                (capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, capa_fecha_fin, capa_hora_fin, capa_flyer, capa_archivo, capa_video, capa_estado, capa_link, capa_depe) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa', ?,'GTIE')";
+                (capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, capa_fecha_fin, capa_hora_fin, capa_flyer, capa_archivo, capa_video, capa_estado, capa_link,capa_depe) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa', ?,'ADC')";
         $stmt = $conectar->prepare($sql);
         $stmt->execute([$titulo, $expositor, $fechaInicio, $horaInicio, $fechaFin, $horaFin, $flyer, $archivos, $video, $link]);
     }
@@ -85,7 +86,7 @@ class Capacitacion extends Conectar
         $sql = " SELECT * FROM sc_intranet.tb_capacitaciones
 WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
   AND EXTRACT(YEAR FROM capa_fecha_inicio) = ?
-  AND capa_estado = 'activa' AND capa_depe='GTIE' ";
+  AND capa_estado = 'activa' and capa_depe='ADC'";
 
         $sql = $conectar->prepare($sql);
         $sql->bindValue(1, $mes, PDO::PARAM_INT);
@@ -106,7 +107,7 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
     public function eliminar_capacitacion($capa_id)
     {
         $conectar = parent::conexion();
-        $sql = "DELETE FROM sc_intranet.tb_capacitaciones WHERE capa_id = ?";
+        $sql = "DELETE FROM sc_intranet.tb_capacitaciones WHERE capa_id = ? and capa_depe='ADC'";
         $stmt = $conectar->prepare($sql);
         $stmt->bindParam(1, $capa_id, PDO::PARAM_INT);
         $stmt->execute();
@@ -119,7 +120,7 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
             $conectar = parent::conexion();
             $sql = "SELECT capa_id, capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio, 
                            capa_fecha_fin, capa_hora_fin, capa_flyer, capa_archivo, capa_video 
-                    FROM sc_intranet.tb_capacitaciones WHERE capa_id = ?";
+                    FROM sc_intranet.tb_capacitaciones WHERE capa_id = ? and capa_depe='ADC'";
             $stmt = $conectar->prepare($sql);
             $stmt->bindParam(1, $capa_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -139,7 +140,7 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
                 SET capa_titulo = ?, capa_expositor = ?, capa_fecha_inicio = ?, 
                     capa_hora_inicio = ?, capa_fecha_fin = ?, capa_hora_fin = ?, 
                     capa_flyer = ?, capa_archivo = ?, capa_video = ? 
-                WHERE capa_id = ?";
+                WHERE capa_id = ? and capa_depe='ADC'";
         $stmt = $conectar->prepare($sql);
         $stmt->execute([
             $data['titulo'],
@@ -166,7 +167,8 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
 
             // Obtiene la conexión desde la clase padre
             $sql = "SELECT capa_id, capa_titulo, capa_expositor, capa_fecha_inicio, capa_hora_inicio 
-	    FROM sc_intranet.tb_capacitaciones where capa_estado='activa' and capa_depe='GTIE' ORDER BY capa_fecha_inicio desc";
+	    FROM sc_intranet.tb_capacitaciones where capa_estado='activa' and 
+        capa_depe='ADC' ORDER BY capa_fecha_inicio desc  ";
 
 
             $stmt = $conectar->prepare($sql); // Preparar la consulta
@@ -323,8 +325,8 @@ WHERE EXTRACT(MONTH FROM capa_fecha_inicio) = ?
     public function get_capacitaciones_por_usuario_tabla($pers_id)
     {
         $conectar = parent::conexion();
-        $sql = "SELECT c.capa_titulo,c.capa_id, c.capa_expositor, 
-	c.capa_fecha_inicio,  c.capa_link , c.capa_depe
+        $sql = "SELECT c.capa_titulo,c.capa_id, c.capa_titulo, c.capa_expositor, 
+	c.capa_fecha_inicio,  c.capa_link
 	FROM sc_intranet.tb_capacitaciones c 
 	inner join sc_intranet.tb_capacitacion_persona cp on cp.capa_id=c.capa_id
     WHERE cp.pers_id = :pers_id";
