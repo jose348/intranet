@@ -26,5 +26,18 @@ switch ($_GET["op"]) {
                 echo json_encode($datos ? $datos : ["error" => "No se encontraron datos de situación laboral."]);
             }
             break;
+
+
+           // PARA VISUALIZAR EL CUMPLEAÑOS DE LAS PERSONAS
+           // PARA VISUALIZAR EL CUMPLEAÑOS DE LAS PERSONAS
+         // Listar cumpleaños en formato JSON
+    case "listarCumpleaños":
+        $data = $persona->get_cumpleanios();
+        header('Content-Type: application/json');
+        echo json_encode($data);
+        break;
+
+    
+   
     
     }

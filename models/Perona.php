@@ -68,7 +68,24 @@ class Persona extends Conectar
      return $stmt->fetch(PDO::FETCH_ASSOC);
  }
 
-   
+   //PARA MOSTRAR CUMPLEAÑOS 
+   //PARA MOSTRAR CUMPLEAÑOS 
+   //PARA MOSTRAR CUMPLEAÑOS 
+   public function get_cumpleanios() {
+    $conectar = parent::Conexion();
+    parent::set_names();
+
+    $sql = "SELECT CONCAT(pers_apelpat, ' ', pers_apelmat, ' ', pers_nombre) AS Nombre, pers_dni
+            FROM sc_escalafon.tb_persona
+            WHERE EXTRACT(MONTH FROM pers_fechanac) = EXTRACT(MONTH FROM CURRENT_DATE)
+              AND EXTRACT(DAY FROM pers_fechanac) = EXTRACT(DAY FROM CURRENT_DATE)
+            ORDER BY pers_apelpat, pers_apelmat";
+
+    $stmt = $conectar->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
     
-    }
+}
        
